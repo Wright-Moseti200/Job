@@ -15,6 +15,11 @@ let userSchema = mongoose.Schema({
     },
     resume:{
         type:String
+    },
+    created_at:{
+        type:String,
+        required:true,
+        default:new Date()
     }
 });
 
