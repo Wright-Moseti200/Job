@@ -6,6 +6,8 @@ import Preview from './pages/Preview'
 import ContextProvider from './context/Context'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
@@ -14,12 +16,13 @@ const App = () => {
       <ContextProvider>
         <Routes>
           <Route path="/" element={<Homepage />} />
-          <Route path="/applied-jobs" element={<Preview/>}/>
+          <Route path="/applied-jobs" element={<Preview />} />
           <Route path="/jobs/:id" element={<Jobs />} />
         </Routes>
       </ContextProvider>
       <Footer />
-    </BrowserRouter>
+      <ToastContainer />
+    </BrowserRouter >
   )
 }
 

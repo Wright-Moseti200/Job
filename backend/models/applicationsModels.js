@@ -1,7 +1,7 @@
 let mongoose = require("mongoose");
 
 let applicationSchema = mongoose.Schema({
-    id:{
+    job_id:{
         type:String,
         required:true
     },
@@ -9,7 +9,7 @@ let applicationSchema = mongoose.Schema({
         type:String,
         required:true
     },
-    recruiters_name:{
+    company_id:{
         type:String,
         required:true
     },

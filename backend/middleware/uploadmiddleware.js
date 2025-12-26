@@ -11,8 +11,8 @@ cloudinary.config({
 let storage = new CloudinaryStorage({
     cloudinary:cloudinary,
     params:{
-        folder:"Job_portal",
-        format:["pdf","doc","docx","ppt"]
+        folder_name:"Job_portal",
+        allowed_formats:["pdf","doc","docx","ppt"]
     }
 });
 

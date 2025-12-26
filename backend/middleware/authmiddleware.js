@@ -1,22 +1,25 @@
 let jwt = require("jsonwebtoken");
 require("dotenv").config();
-let auth = (req,res,next) =>{
-    try{
+
+let auth = (req, res, next) => {
+    try {
         let token = req.header("auth-token");
-        if(!token){
+        if (!token) {
             res.status(401).json({
-                success:false,
-                message:"token unavailable"
+                success: false,
+                message: "token unavailable"
             });
         }
-        let data = jwt.verify(token,process.env.JWT_PAS);
+        let data = jwt.verify(token, process.env.JWT_PAS);
         req.user = data.user;
         next();
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
-            success:false,
-            message:error.message
+            success: false,
+            message: error.message
         })
     }
 }
+
+module.exports = { auth };

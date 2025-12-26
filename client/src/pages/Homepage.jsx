@@ -1,62 +1,84 @@
- 
- 
 /* eslint-disable react-hooks/set-state-in-effect */
- 
-import React,{useState,useEffect} from 'react'
+
+import React, { useState, useEffect } from 'react'
 import { assets, jobsData } from '../assets/assets'
-import {Link} from "react-router-dom"
+import { Link } from "react-router-dom"
 const Homepage = () => {
-    let [categories,setCategories]=useState([]);
-    let [location,setLocation]=useState([]);
-    let [jobs,setJobs]=useState([]);
+  let [categories, setCategories] = useState([]);
+  let [location, setLocation] = useState([]);
+  let [jobs, setJobs] = useState([]);
+  let [allJobs, setAllJobs] = useState([]); // Store all fetched jobs
 
-    useEffect(()=>{
-        let jobData = jobsData.filter((element)=>{
-          if(location.length>0&&categories.length<=0){
-          let values = location.includes(element.location);
-          return values;
-          }
-          else if(categories.length>0&&location.length<=0){
-            let values2 = categories.includes(element.category);
-            return values2
-          }
-          else if(categories.length>0 && location.length>0){
-            let values3 = categories.includes(element.category);
-            let values4 = location.includes(element.location);
-            return values3 && values4
-          }
-          else{
-          return element;
-          }
-        });
-        setJobs(jobData);
-    },[categories,location]);
+  const backendUrl = "http://localhost:4000"
 
-   let categoriescheckboxchange = (e) =>{
-        setCategories((value)=>{
-            let values = [...value];
-            if(values.includes(e.target.value)){
-              values.filter((element)=>{element!==e.target.value});
-            }
-            else{
-              values.push(e.target.value);
-            }
-            return values;
-        });
+  const fetchJobs = async () => {
+    try {
+      const response = await fetch(backendUrl + '/api/users/jobs')
+      const data = await response.json()
+      if (data.success) {
+        setAllJobs(data.jobsdata)
+        setJobs(data.jobsdata)
+      }
+    } catch (error) {
+      console.log(error)
     }
+  }
 
-    let locationcheckboxchange = (e)=>{
-        setLocation((value)=>{
-            let values = [...value];
-             if(values.includes(e.target.value)){
-              values.filter((element)=>{element!==e.target.value});
-            }
-            else{
-              values.push(e.target.value);
-            }
-            return values;
-        });
-    }
+  useEffect(() => {
+    fetchJobs()
+  }, [])
+
+  useEffect(() => {
+    if (allJobs.length === 0) return; // Wait for data
+
+    let jobData = allJobs.filter((element) => {
+      if (location.length > 0 && categories.length <= 0) {
+        let values = location.includes(element.location);
+        return values;
+      }
+      else if (categories.length > 0 && location.length <= 0) {
+        let values2 = categories.includes(element.category);
+        return values2
+      }
+      else if (categories.length > 0 && location.length > 0) {
+        let values3 = categories.includes(element.category);
+        let values4 = location.includes(element.location);
+        return values3 && values4
+      }
+      else {
+        return element;
+      }
+    });
+    setJobs(jobData);
+  }, [categories, location, allJobs]);
+
+  let categoriescheckboxchange = (e) => {
+    setCategories((value) => {
+      let values = [...value];
+      if (values.includes(e.target.value)) {
+        let removedvalues = values.filter((element) => { return element !== e.target.value });
+        return removedvalues;
+      }
+      else {
+        values.push(e.target.value);
+      }
+      return values;
+    });
+  }
+
+  let locationcheckboxchange = (e) => {
+    setLocation((value) => {
+      let values = [...value];
+      if (values.includes(e.target.value)) {
+        let removedvalues = values.filter((element) => { return element !== e.target.value });
+        return removedvalues;
+      }
+      else {
+        values.push(e.target.value);
+      }
+      return values;
+    });
+  }
 
   return (
     <div className="flex flex-col items-center">
@@ -122,7 +144,7 @@ const Homepage = () => {
           <div className="flex flex-col gap-3 text-gray-600">
             {['Programming', 'Data Science', 'Designing', 'Networking', 'Management', 'Cybersecurity'].map((cat) => (
               <label key={cat} className="flex items-center gap-2 cursor-pointer hover:text-blue-600 transition-colors">
-                <input type="checkbox" onChange={categoriescheckboxchange}value={cat} className="w-4 h-4 accent-blue-600" />
+                <input type="checkbox" onChange={categoriescheckboxchange} value={cat} className="w-4 h-4 accent-blue-600" />
                 {cat}
               </label>
             ))}
@@ -166,10 +188,10 @@ const Homepage = () => {
 
                 <div className="mt-auto flex gap-3">
                   <button className="flex-1 bg-blue-600 text-white rounded py-2 text-sm font-medium hover:bg-blue-700 transition-colors">
-                <Link to={`/jobs/${job._id}`}>Apply Now</Link>
+                    <Link to={`/jobs/${job._id}`}>Apply Now</Link>
                   </button>
                   <button className="flex-1 border border-gray-300 text-gray-600 rounded py-2 text-sm font-medium hover:bg-gray-50 transition-colors">
-                <Link to={`/jobs/${job._id}`}>Learn More</Link>
+                    <Link to={`/jobs/${job._id}`}>Learn More</Link>
                   </button>
                 </div>
               </div>

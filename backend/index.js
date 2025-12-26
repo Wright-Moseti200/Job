@@ -4,14 +4,14 @@ let cors = require("cors");
 let rateLimit = require("express-rate-limit");
 const { connectDB } = require("./config/database");
 const { userRoutes } = require("./routes/userRoutes");
+const { adminRoutes } = require("./routes/adminRoutes");
 require("dotenv").config();
 let PORT = process.env.PORT || 4000;
-
+app.use([cors(),express.json()]);
 let limit = rateLimit({
     windowMs:10*60*1000,
     max:100
 });
-app.use([cors(),express.json()]);
 app.use(limit);
 app.set("trust proxy",1);
 
@@ -21,6 +21,7 @@ res.send("Express server is running");
 });
 
 app.use("/api/users",userRoutes);
+app.use("/api/admin",adminRoutes);
 
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);

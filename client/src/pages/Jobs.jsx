@@ -1,25 +1,88 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { jobsData, assets } from '../assets/assets';
+import { assets } from '../assets/assets';
+import { toast } from 'react-toastify';
 
 const Jobs = () => {
   const { id } = useParams();
   const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const backendUrl = "http://localhost:4000"
+
+  const fetchJob = async () => {
+    try {
+      const response = await fetch(backendUrl + '/api/users/jobs')
+      const data = await response.json()
+      if (data.success) {
+        // Note: The ID in URL might be string, ID from backend might be number or string. 
+        // Using loose comparison or ensuring types match. 
+        // Assuming backend uses `id` (number) or `_id` (string). 
+        // Admin uploaded jobs have `id` (custom increment) but Mongo has `_id`. 
+        // Let's check both or console log if issues arise. 
+        // The id from params is likely the mongo _id if passed from Homepage links using ._id
+        const foundJob = data.jobsdata.find((j) => j._id === id || j.id == id);
+        setJob(foundJob);
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to load job details")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const applyForJob = async () => {
+    const token = localStorage.getItem('auth-token')
+    if (!token) {
+      toast.error("Please login to apply")
+      return
+    }
+    if (!job) return
+
+    try {
+      const response = await fetch(backendUrl + '/api/users/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'auth-token': token
+        },
+        body: JSON.stringify({
+          title: job.title,
+          location: job.location,
+          company_id: job.companyId.name, // Using name as fallback if companyId is object
+          job_id: job._id || job.id
+        })
+      })
+      const data = await response.json()
+      if (data.success) {
+        toast.success(data.message)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+    }
+  }
 
   useEffect(() => {
-    if (id) {
-      // Ensure strictly equal comparison if IDs are strings, or loose if mixed. 
-      // Based on assets.js, ids are content strings '1', '2' etc. but let's be safe.
-      const foundJob = jobsData.find((j) => j._id === id);
-      setJob(foundJob);
-    }
+    fetchJob();
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500'></div>
+      </div>
+    );
+  }
 
   if (!job) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-gray-500 text-lg">Loading job details or job not found...</p>
+      <div className="flex justify-center items-center h-screen flex-col gap-4">
+        <p className="text-gray-500 text-lg">Job not found...</p>
+        <Link to="/" className="text-blue-600 hover:underline">Back to Home</Link>
       </div>
     );
   }
@@ -42,7 +105,6 @@ const Jobs = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="flex items-center gap-4">
                 <div className="bg-white p-3 rounded-lg shadow-sm">
-                  {/* Handle potentially nested companyId object based on data structure */}
                   <img
                     src={job.companyId?.image || assets.company_icon}
                     alt={job.companyId?.name || "Company"}
@@ -58,7 +120,7 @@ const Jobs = () => {
                 </div>
               </div>
 
-              <button className="bg-white text-blue-600 px-8 py-3 rounded font-bold hover:bg-blue-50 transition-colors shadow-lg">
+              <button onClick={applyForJob} className="bg-white text-blue-600 px-8 py-3 rounded font-bold hover:bg-blue-50 transition-colors shadow-lg">
                 Apply Now
               </button>
             </div>
@@ -118,7 +180,7 @@ const Jobs = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <h3 className="font-bold text-blue-800 mb-2">Interested?</h3>
                 <p className="text-gray-600 text-sm mb-4">Don't miss out on this opportunity.</p>
-                <button className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 transition-colors">
+                <button onClick={applyForJob} className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 transition-colors">
                   Apply Now
                 </button>
               </div>
